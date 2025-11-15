@@ -1,0 +1,58 @@
+version: '3.8'
+services:
+  payment-app:
+    build: .
+    container_name: java-payment-app
+    ports:
+      - "9003:9003"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://payment-db:5432/payment_db
+      - SPRING_DATA_REDIS_HOST=payment-redis
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=payment-kafka:9092
+    depends_on:
+      - payment-db
+      - payment-redis
+      - payment-kafka
+
+  payment-db:
+    image: postgres:15
+    container_name: java-payment-postgres
+    ports:
+      - "15403:5432"
+    environment:
+      POSTGRES_DB: payment_db
+      POSTGRES_USER: payment_user
+      POSTGRES_PASSWORD: payment_pass
+    volumes:
+      - payment_pg_data:/var/lib/postgresql/data
+
+  payment-redis:
+    image: redis:7-alpine
+    container_name: java-payment-redis
+    ports:
+      - "16403:6379"
+
+  payment-zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: java-payment-zookeeper
+    ports:
+      - "12181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  payment-kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: java-payment-kafka
+    ports:
+      - "19092:9092"
+    depends_on:
+      - payment-zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: payment-zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:19092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+volumes:
+  payment_pg_data:

@@ -1,0 +1,24 @@
+server:
+  port: 9003
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5435/payment_db
+    username: payment_user
+    password: payment_pass
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  data:
+    redis:
+      host: localhost
+      port: 6382
+  kafka:
+    bootstrap-servers: localhost:9092
+
+auth:
+  service-url: http://localhost:9001
+wallet:
+  service-url: http://localhost:9002
