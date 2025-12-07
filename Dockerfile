@@ -1,11 +1,12 @@
-FROM maven:3.9.9-eclipse-temurin-17 AS build
+FROM maven:3.9.6-eclipse-temurin-17 AS builder
 WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 RUN mvn clean package -DskipTests
 
-FROM eclipse-temurin:17-jdk-jammy
+FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
-COPY --from=build /app/target/java-finflow-payment-service-0.0.1-SNAPSHOT.jar app.jar
-EXPOSE 9001
+COPY --from=builder /app/target/*.jar app.jar
+EXPOSE 9003
 ENTRYPOINT ["java", "-jar", "app.jar"]
+
